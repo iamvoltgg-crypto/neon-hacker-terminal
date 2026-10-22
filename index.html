@@ -1,0 +1,311 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>NEON // Cyber Command</title>
+<style>
+:root{--g:#48ff91;--d:#126b3a;--bg:#020604}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--g);font:14px monospace}
+body:after{content:"";position:fixed;inset:0;pointer-events:none;z-index:10;background:repeating-linear-gradient(0deg,transparent 0px,transparent 3px,#00ff8809 4px)}
+header{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;padding:18px;border-bottom:1px solid var(--d);background:#06130b;letter-spacing:2px}
+h1{font-size:18px;margin:0;text-shadow:0 0 14px var(--g)}
+.small{font-size:11px;color:#71b88c}
+.layout{display:grid;grid-template-columns:190px minmax(0,1fr) 270px;gap:12px;padding:12px}
+.panel{min-width:0;border:1px solid var(--d);background:linear-gradient(140deg,#07170d,#020604);padding:14px;box-shadow:0 0 15px #00ff8808}
+h2{font-size:12px;font-weight:normal;letter-spacing:2px;margin:0 0 15px;color:#b3ffcc}
+nav{display:grid;gap:8px}
+button{background:#071c0e;color:var(--g);border:1px solid var(--d);padding:11px;font:inherit;cursor:pointer}
+button:hover{background:#103d21;border-color:var(--g);box-shadow:0 0 10px #00ff8833}
+nav button{text-align:left}
+.center{display:grid;gap:12px}
+#terminal{height:330px;overflow:auto;white-space:pre-wrap;line-height:1.8;overflow-wrap:anywhere}
+form{display:flex;gap:8px;margin-top:12px}
+input{width:100%;min-width:0;background:#010402;color:var(--g);border:1px solid var(--d);padding:12px;font:inherit}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.actions button{flex:1}
+.right{display:grid;gap:12px;align-content:start}
+.meter{display:flex;justify-content:space-between;font-size:12px}
+.bar{height:8px;border:1px solid var(--d);margin:7px 0 15px}
+.fill{height:100%;width:25%;background:var(--g);box-shadow:0 0 12px var(--g);transition:width .5s}
+#logs{height:150px;overflow:auto;font-size:11px;line-height:1.8;overflow-wrap:anywhere}
+.map{height:150px;position:relative;overflow:hidden;background-image:linear-gradient(#126b3a33 1px,transparent 1px),linear-gradient(90deg,#126b3a33 1px,transparent 1px);background-size:20px 20px}
+.map svg{width:100%;height:100%}
+.dot{position:absolute;width:7px;height:7px;background:var(--g);border-radius:50%;box-shadow:0 0 14px 4px #00ff8866;animation:pulse 1.4s infinite}
+@keyframes pulse{50%{opacity:.2;transform:scale(1.8)}}
+#visual{height:85px;display:flex;align-items:end;gap:4px}
+#visual i{flex:1;background:var(--g);opacity:.6;animation:wave .8s infinite alternate}
+#visual i:nth-child(3n){animation-delay:-.4s}
+#visual i:nth-child(2n){animation-delay:-.7s}
+@keyframes wave{from{height:10%}to{height:95%}}
+#sequence{min-height:85px;white-space:pre-wrap;line-height:1.8}
+footer{padding:12px 18px;color:#528364;font-size:11px}
+@media(max-width:900px){.layout{grid-template-columns:160px minmax(0,1fr)}.right{grid-column:1/-1;grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:560px){.layout{grid-template-columns:1fr}.right{grid-column:auto;grid-template-columns:1fr}nav{grid-template-columns:repeat(2,minmax(0,1fr))}#terminal{height:280px}header{letter-spacing:1px}}
+</style>
+
+#matrix {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.55;
+}
+header, .layout, footer {
+  position: relative;
+  z-index: 1;
+}
+.panel {
+  background: rgba(2, 12, 6, 0.84);
+  backdrop-filter: blur(2px);
+}
+
+</head>
+<body>
+
+<canvas id="matrix"></canvas>
+
+<header>
+  <h1>▣ NEON // CYBER COMMAND</h1>
+  <span class="small">LOCAL SIMULATION • NO REAL TARGETS</span>
+  <span id="clock"></span>
+  <button id="fullscreen">⛶ FULL SCREEN</button>
+</header>
+
+<div class="layout">
+  <aside class="panel">
+    <h2>COMMAND DECK</h2>
+    <nav>
+      <button data-cmd="help">› COMMANDS</button>
+      <button data-cmd="scan">› FAKE SCAN</button>
+      <button data-cmd="hack">› ACCESS SEQUENCE</button>
+      <button data-cmd="status">› SYSTEM STATUS</button>
+      <button data-cmd="clear">› CLEAR OUTPUT</button>
+    </nav>
+    <hr style="border-color:#126b3a;margin:22px 0">
+    <div class="small">
+      OPERATOR: DEMO<br>
+      ENVIRONMENT: BROWSER<br>
+      NETWORK: NOT CONNECTED<br>
+      MODE: VISUAL SIMULATION
+    </div>
+  </aside>
+
+  <main class="center">
+    <section class="panel">
+      <h2>LIVE TERMINAL // INPUT</h2>
+      <div id="terminal"></div>
+      <form id="form">
+        <span>&gt;</span>
+        <input id="cmd" placeholder="Type help, scan, hack..." autocomplete="off" autofocus>
+        <button>RUN</button>
+      </form>
+      <div class="actions">
+        <button data-cmd="scan">▶ START SIMULATION</button>
+        <button data-cmd="clear">CLEAR SCREEN</button>
+      </div>
+    </section>
+    <section class="panel">
+      <h2>ACCESS SEQUENCE // CINEMATIC DEMO</h2>
+      <div id="sequence">[ READY ] Awaiting operator command...</div>
+      <div class="bar"><div class="fill" id="progress"></div></div>
+      <div id="percent" class="small">IDLE • 0%</div>
+    </section>
+  </main>
+
+  <aside class="right">
+    <section class="panel">
+      <h2>NETWORK MAP // DECORATIVE</h2>
+      <div class="map">
+        <svg viewBox="0 0 260 150" aria-label="Decorative network illustration">
+          <g fill="none" stroke="#126b3a" stroke-width="1.5">
+            <path d="M15 40L55 18 88 45 120 20 160 44 205 25 245 55 220 95 180 75 150 125 112 86 75 115 38 80Z"/>
+            <path d="M55 18L75 115M88 45L180 75M120 20L112 86M160 44L220 95M38 80L150 125M205 25L180 75"/>
+          </g>
+          <g fill="#48ff91">
+            <circle cx="55" cy="18" r="3"/><circle cx="120" cy="20" r="3"/>
+            <circle cx="205" cy="25" r="3"/><circle cx="180" cy="75" r="3"/>
+            <circle cx="112" cy="86" r="3"/><circle cx="150" cy="125" r="3"/>
+          </g>
+        </svg>
+        <i class="dot" style="left:21%;top:23%"></i>
+        <i class="dot" style="left:68%;top:46%"></i>
+      </div>
+      <p class="small">ILLUSTRATION ONLY — NO NETWORK SCAN</p>
+    </section>
+
+    <section class="panel">
+      <h2>EVENT STREAM</h2>
+      <div id="logs">[BOOT] Local simulation initialized</div>
+    </section>
+
+    <section class="panel">
+      <h2>SIMULATED TELEMETRY</h2>
+      <div class="meter"><span>CPU LOAD</span><span id="cpuNum">24%</span></div>
+      <div class="bar"><div class="fill" id="cpu"></div></div>
+      <div class="meter"><span>MEMORY</span><span id="memNum">48%</span></div>
+      <div class="bar"><div class="fill" id="mem"></div></div>
+      <div class="meter"><span>DATA SIGNAL</span><span id="sigNum">76%</span></div>
+      <div class="bar"><div class="fill" id="sig"></div></div>
+      <p class="small">Random decorative values, not actual readings.</p>
+    </section>
+
+    <section class="panel">
+      <h2>DATA ACTIVITY</h2>
+      <div id="visual"></div>
+      <p class="small">ANIMATED VISUAL EFFECT</p>
+    </section>
+  </aside>
+</div>
+<footer>NEON TERMINAL v3.0 • ENTERTAINMENT DEMO • NO ACCOUNT ACCESS • NO REAL HACKING</footer>
+
+<script>
+const $=id=>document.getElementById(id);
+const terminal=$('terminal');
+let runId=0;
+
+function write(s){
+  terminal.textContent+=s+'\n';
+  terminal.scrollTop=terminal.scrollHeight;
+}
+function log(s){
+  $('logs').textContent+=' \n['+new Date().toLocaleTimeString()+'] '+s;
+  $('logs').scrollTop=$('logs').scrollHeight;
+}
+function sequence(lines){
+  const id=++runId;
+  $('sequence').textContent='';
+  $('progress').style.width='0%';
+  $('percent').textContent='RUNNING • 0%';
+  let i=0;
+  function next(){
+    if(id!==runId)return;
+    if(i>=lines.length){
+      $('percent').textContent='COMPLETE • 100%';
+      return;
+    }
+    $('sequence').textContent+='[ '+String(i+1).padStart(2,'0')+' ] '+lines[i]+'\n';
+    $('progress').style.width=((i+1)/lines.length*100)+'%';
+    $('percent').textContent='SIMULATED • '+Math.round((i+1)/lines.length*100)+'%';
+    log(lines[i]);
+    i++;
+    setTimeout(next,550);
+  }
+  next();
+}
+function run(raw){
+  const c=raw.trim().toLowerCase();
+  if(!c)return;
+  write('operator@neon:~$ '+raw);
+  log('Command entered: '+c);
+  if(c==='help'){
+    write('COMMANDS: help, scan, hack, status, about, clear');
+  }else if(c==='scan'){
+    write('[DEMO] Initializing fictional scan...');
+    write('[DEMO] Imaginary nodes identified: 03');
+    write('[DEMO] No network activity occurred.');
+    sequence(['Booting visual scanner','Mapping imaginary nodes','Analyzing demo data','SIMULATION COMPLETE']);
+  }else if(c==='hack'){
+    write('[DEMO] Running cinematic access sequence...');
+    write('[DEMO] ACCESS GRANTED — FICTIONAL EFFECT.');
+    sequence(['Loading fictional modules','Verifying imaginary credentials','Rendering access animation','ACCESS GRANTED // DEMO ONLY']);
+  }else if(c==='status'){
+    write('STATUS: ONLINE | MODE: LOCAL DEMO | REAL TARGETS: NONE');
+  }else if(c==='about'){
+    write('NEON v3.0 — a local movie-style terminal simulation.');
+  }else if(c==='clear'){
+    runId++;
+    terminal.textContent='';
+    $('sequence').textContent='[ READY ] Awaiting operator command...';
+    $('progress').style.width='0%';
+    $('percent').textContent='IDLE • 0%';
+  }else{
+    write('Unknown command. Type help.');
+  }
+}
+$('form').addEventListener('submit',e=>{
+  e.preventDefault();
+  run($('cmd').value);
+  $('cmd').value='';
+  $('cmd').focus();
+});
+document.querySelectorAll('[data-cmd]').forEach(b=>{
+  b.addEventListener('click',()=>run(b.dataset.cmd));
+});
+$('fullscreen').addEventListener('click',async()=>{
+  try{
+    if(!document.fullscreenElement)await document.documentElement.requestFullscreen();
+    else await document.exitFullscreen();
+  }catch(e){log('Fullscreen unavailable in this browser.');}
+});
+$('visual').innerHTML=Array.from({length:32},()=>'<i></i>').join('');
+function tick(){
+  $('clock').textContent=new Date().toLocaleTimeString();
+}
+tick();
+setInterval(tick,1000);
+
+[['cpu','cpuNum'],['mem','memNum'],['sig','sigNum']].forEach(([bar,num])=>{
+  setInterval(()=>{
+    const n=15+Math.floor(Math.random()*80);
+    $(bar).style.width=n+'%';
+    $(num).textContent=n+'%';
+  },1200+Math.random()*1000);
+});
+write('NEON CYBER COMMAND v3.0');
+write('Cinematic interface initialized.');
+write('Type help to see commands.');
+</script>
+
+const canvas = document.getElementById('matrix');
+const ctx = canvas.getContext('2d');
+
+const chars = 'アカサタナハマヤラワ012345789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+const fontSize = 16;
+let columns = 0;
+let drops = [];
+
+function resizeMatrix() {
+  const dpr = window.devicePixelRatio || 1;
+  canvas.width = window.innerWidth * dpr;
+  canvas.height = window.innerHeight * dpr;
+  canvas.style.width = window.innerWidth + 'px';
+  canvas.style.height = window.innerHeight + 'px';
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+  columns = Math.ceil(window.innerWidth / fontSize);
+  drops = Array.from(
+    { length: columns },
+    () => Math.random() * -window.innerHeight / fontSize
+  );
+}
+
+function drawMatrix() {
+  ctx.fillStyle = 'rgba(0, 5, 2, 0.12)';
+  ctx.fillRect(0, 0, window.innerWidth, window.innerHeight);
+
+  ctx.font = fontSize + 'px monospace';
+  ctx.fillStyle = '#48ff91';
+
+  for (let i = 0; i < drops.length; i++) {
+    const char = chars[Math.floor(Math.random() * chars.length)];
+    ctx.fillText(char, i * fontSize, drops[i] * fontSize);
+
+    if (drops[i] * fontSize > window.innerHeight && Math.random() > 0.975) {
+      drops[i] = 0;
+    }
+    drops[i] += 0.65;
+  }
+}
+
+window.addEventListener('resize', resizeMatrix);
+resizeMatrix();
+setInterval(drawMatrix, 40);
+
+</body>
+</html>
