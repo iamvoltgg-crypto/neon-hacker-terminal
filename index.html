@@ -228,12 +228,11 @@ function run(raw){
 $('form').addEventListener('submit',e=>{
   e.preventDefault();
 
-  const command = $('cmd').value.trim();
-
-  if (command) {
-    startMatrix();
-    run(command);
-  }
+const command = $('cmd').value.trim();
+  
+if (command) {
+  run(command);
+}
 
   $('cmd').value='';
   $('cmd').focus();
