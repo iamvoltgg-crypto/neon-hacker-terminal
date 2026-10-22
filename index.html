@@ -48,15 +48,6 @@ footer{padding:12px 18px;color:#528364;font-size:11px}
 @media(max-width:560px){.layout{grid-template-columns:1fr}.right{grid-column:auto;grid-template-columns:1fr}nav{grid-template-columns:repeat(2,minmax(0,1fr))}#terminal{height:280px}header{letter-spacing:1px}}
 </style>
 
-#matrix {
-  position: fixed;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 0;
-  pointer-events: none;
-  opacity: 0.55;
-}
 header, .layout, footer {
   position: relative;
   z-index: 1;
@@ -69,7 +60,7 @@ header, .layout, footer {
 </head>
 <body>
 
-<canvas id="matrix"></canvas>
+
 
 
 <header>
@@ -275,62 +266,6 @@ write('Cinematic interface initialized.');
 write('Type help to see commands.');
 </script>
 
-const canvas = document.getElementById('matrix');
-const ctx = canvas.getContext('2d');
-
-const chars = 'アカサタナハマヤラワ012345789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-const fontSize = 16;
-let columns = 0;
-let drops = [];
-
-function resizeMatrix() {
-  const dpr = window.devicePixelRatio || 1;
-  canvas.width = window.innerWidth * dpr;
-  canvas.height = window.innerHeight * dpr;
-  canvas.style.width = window.innerWidth + 'px';
-  canvas.style.height = window.innerHeight + 'px';
-  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-
-  columns = Math.ceil(window.innerWidth / fontSize);
-  drops = Array.from(
-    { length: columns },
-    () => Math.random() * -window.innerHeight / fontSize
-  );
-}
-
-function drawMatrix() {
-  ctx.fillStyle = 'rgba(0, 5, 2, 0.12)';
-  ctx.fillRect(0, 0, window.innerWidth, window.innerHeight);
-
-  ctx.font = fontSize + 'px monospace';
-  ctx.fillStyle = '#48ff91';
-
-  for (let i = 0; i < drops.length; i++) {
-    const char = chars[Math.floor(Math.random() * chars.length)];
-    ctx.fillText(char, i * fontSize, drops[i] * fontSize);
-
-    if (drops[i] * fontSize > window.innerHeight && Math.random() > 0.975) {
-      drops[i] = 0;
-    }
-    drops[i] += 0.65;
-  }
-}
-
-
-
-let matrixRunning = false;
-let matrixTimer = null;
-
-function startMatrix() {
-  if (matrixRunning) return;
-
-  matrixRunning = true;
-  matrixTimer = setInterval(drawMatrix, 40);
-}
-
-
-window.addEventListener('resize', resizeMatrix);
-resizeMatrix();
 </script>
 </body>
 </html>
