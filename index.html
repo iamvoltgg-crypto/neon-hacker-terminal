@@ -236,7 +236,14 @@ function run(raw){
 }
 $('form').addEventListener('submit',e=>{
   e.preventDefault();
-  run($('cmd').value);
+
+  const command = $('cmd').value.trim();
+
+  if (command) {
+    startMatrix();
+    run(command);
+  }
+
   $('cmd').value='';
   $('cmd').focus();
 });
@@ -309,9 +316,20 @@ function drawMatrix() {
   }
 }
 
+
+let matrixRunning = false;
+let matrixTimer = null;
+
+function startMatrix() {
+  if (matrixRunning) return;
+
+  matrixRunning = true;
+  matrixTimer = setInterval(drawMatrix, 40);
+}
+
 window.addEventListener('resize', resizeMatrix);
 resizeMatrix();
-setInterval(drawMatrix, 40);
+
 
 </body>
 </html>
