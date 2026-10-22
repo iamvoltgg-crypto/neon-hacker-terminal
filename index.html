@@ -317,6 +317,7 @@ function drawMatrix() {
 }
 
 
+
 let matrixRunning = false;
 let matrixTimer = null;
 
@@ -326,6 +327,7 @@ function startMatrix() {
   matrixRunning = true;
   matrixTimer = setInterval(drawMatrix, 40);
 }
+
 
 window.addEventListener('resize', resizeMatrix);
 resizeMatrix();
